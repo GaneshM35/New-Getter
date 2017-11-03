@@ -13,6 +13,51 @@
 		return $var;
 	}
 
+	public function login($email, $password){
+		$smt = $this->pdo->prepare("SELECT `user_id` FROM `users` WHERE `email` = :email AND `password` = :password");
+		$smt->bindParam(':email', $email, PDO::PARAM_STR);
+		$smt->bindParam(':password', md5($password), PDO::PARAM_STR);
+		$smt->execute();
+
+		$user = $smt->fetch(PDO::FETCH_OBJ);
+		$count = $smt->rowCount();
+
+		if($count > 0){
+			$_SESSION['user_id'] = $user->user_id;
+			header('Location: home.php');
+		}else{
+			return false;
+		}
+
 	}
 
+	public function userData($user_id){
+		$smt = $this->pdo->prepare("SELECT * FROM `users` WHERE `user_id` = :user_id");
+		$smt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+		$smt->execute();
+		return $smt->fetch(PDO::FETCH_OBJ);
+	}
+
+	public function logout(){
+		$_SESSION = array();
+		session_destroy();
+		header('Location: index.php');
+	}
+
+	public function checkEmail($email){
+		$smt = $this->pdo->prepare("SELECT `email` FROM `users` WHERE `email` = :email");
+		$smt->bindParam(":email", $email, PDO::PARAM_STR);
+		$smt->execute();
+		
+		$count = $smt->rowCount();
+		if($count > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+
+
+	}
 ?>
